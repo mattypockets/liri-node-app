@@ -1,7 +1,9 @@
 require("dotenv").config();
 
-var keys = require("./keys.js")
-
+var keys = require("./keys.js");
+var request = require("request");
+var moment = require("moment");
+var Spotify = require('node-spotify-api');
 var spotify = new Spotify(keys.spotify);
 
 var command = process.argv[2];
@@ -9,27 +11,43 @@ var searchTerm = process.argv[3];
 
 
 // Concert search
-if (command == "concert-this") {
+if (command === "concert-this") {
     let artist = searchTerm;
     let url = ("https://rest.bandsintown.com/artists/" + artist + "/events?app_id=codingbootcamp");
     // Return name of venue, venue location, and date of event (use Moment to format as MM/DD/YY)
+    request(url), function(error, response, body){
+        if (!error && response.statusCode === 200) {
+            console.log(`
+                Venue: ${JSON.parse(body).venue.name}
+                Location: ${JSON.parse(body).venue.city}, ${JSON.parse(body).venue.region}
+                Date: 
+            `)
+        }
+    }
 }
 
 // Spotify search
-if (command == "spotify-this-song") {
+if (command === "spotify-this-song") {
     let songName = searchTerm;
     // Return artist, song name, preview link of song from Spotify, album that the song is from
+    spotify.search({ type: 'track', query: songName }, function(err, data) {
+        if (err) {
+          return console.log('Error occurred: ' + err);
+        }
+       
+      console.log(data); 
+      });
 }
 
 // Movie search
-if (command == "movie-this") {
+if (command === "movie-this") {
     let movieName = searchTerm;
-    // Return movie title, release year, IMDB rating, RT rating, Country where it was produced, language of movie, movie plot summary, actors in the movie
     let queryURL = "https://www.omdbapi.com/?t=" + movieName + "&y=&plot=short&apikey=trilogy";
 
     request(queryURL), function(error, response, body){
     if (!error && response.statusCode === 200) {
         console.log(`
+        =============================
         Title: ${JSON.parse(body).Title}
         Release Year: ${JSON.parse(body).Year}
         IMDB Rating: ${JSON.parse(body).imdbRating}
@@ -45,6 +63,6 @@ if (command == "movie-this") {
 }
 
 // 4th Search Term
-if (command == "do-what-it-says") {
+if (command === "do-what-it-says") {
 
 }
